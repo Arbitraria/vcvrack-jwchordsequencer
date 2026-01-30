@@ -1,0 +1,26 @@
+{
+  "slug": "JWChordSequencer",
+  "name": "JW Chord Sequencer",
+  "version": "2.0.0",
+  "license": "GPL-3.0",
+  "brand": "Arbitrary Modules",
+  "author": "Ian Glenn",
+  "authorEmail": "",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "BarChordSeq",
+      "name": "Bar Chord Sequencer",
+      "description": "32-bar chord sequencer with configurable beats per bar, outputting root and scale CV for JW Quantizer",
+      "tags": [
+        "Sequencer",
+        "Controller"
+      ]
+    }
+  ]
+}
