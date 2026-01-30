@@ -200,13 +200,27 @@ struct BarChordSeq : rack::engine::Module {
 // Widget
 // ============================
 
-// Helper function to create labels
-ui::Label* createLabel(Vec pos, std::string text, float fontSize = 11.0f) {
+// Helper function to create full-width centered labels (for title and single parameters)
+ui::Label* createCenteredLabel(Vec pos, std::string text, float fontSize = 11.0f) {
 	ui::Label* label = new ui::Label();
 	label->box.pos = pos;
+	label->box.size = mm2px(Vec(40.64, 5));  // Full module width (8HP)
 	label->text = text;
 	label->fontSize = fontSize;
-	label->color = nvgRGB(0x44, 0x44, 0x44);  // Dark gray
+	label->alignment = ui::Label::CENTER_ALIGNMENT;
+	label->color = nvgRGB(0x44, 0x44, 0x44);
+	return label;
+}
+
+// Helper function to create half-width column labels (for left/right pairs)
+ui::Label* createColumnLabel(Vec pos, std::string text, float fontSize = 11.0f) {
+	ui::Label* label = new ui::Label();
+	label->box.pos = pos;
+	label->box.size = mm2px(Vec(20.32, 5));  // Half module width
+	label->text = text;
+	label->fontSize = fontSize;
+	label->alignment = ui::Label::CENTER_ALIGNMENT;
+	label->color = nvgRGB(0x44, 0x44, 0x44);
 	return label;
 }
 
@@ -217,6 +231,8 @@ struct ChordDisplay : ui::Label {
 	ChordDisplay() {
 		fontSize = 11.0f;
 		color = nvgRGB(0x44, 0x44, 0x44);  // Match other labels
+		box.size = mm2px(Vec(40.64, 5));  // Full module width
+		alignment = CENTER_ALIGNMENT;
 	}
 
 	void step() override {
@@ -241,24 +257,26 @@ struct BarChordSeqWidget : rack::app::ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		// Title (centered at top)
-		addChild(createLabel(mm2px(Vec(20.32, 7)), "Bar Chord", 12.0f));
-		addChild(createLabel(mm2px(Vec(20.32, 11)), "Sequencer", 10.0f));
+		// Title (full-width centered) - NO CHANGE
+		addChild(createCenteredLabel(mm2px(Vec(0, 7)), "Bar Chord", 12.0f));
+		addChild(createCenteredLabel(mm2px(Vec(0, 11)), "Sequencer", 10.0f));
 
-		// Parameter labels (above each knob)
-		addChild(createLabel(mm2px(Vec(20.32, 14)), "LENGTH", 9.0f));
-		addChild(createLabel(mm2px(Vec(20.32, 32)), "BEATS/BAR", 8.0f));
-		addChild(createLabel(mm2px(Vec(20.32, 50)), "BAR", 9.0f));
-		addChild(createLabel(mm2px(Vec(10.0, 77)), "ROOT", 8.0f));
-		addChild(createLabel(mm2px(Vec(30.64, 77)), "CHORD", 8.0f));
+		// Top three knob labels (centered below each knob, in gaps between knobs)
+		addChild(createCenteredLabel(mm2px(Vec(0, 25)), "LENGTH", 8.0f));
+		addChild(createCenteredLabel(mm2px(Vec(0, 43)), "BEATS/BAR", 7.0f));
+		addChild(createCenteredLabel(mm2px(Vec(0, 61)), "BAR", 8.0f));
 
-		// Input labels (above each jack)
-		addChild(createLabel(mm2px(Vec(10.0, 101)), "CLOCK", 8.0f));
-		addChild(createLabel(mm2px(Vec(30.64, 101)), "RESET", 8.0f));
+		// ROOT/CHORD knob labels (half-width columns) - MOVED BELOW KNOBS
+		addChild(createColumnLabel(mm2px(Vec(0, 90)), "ROOT", 8.0f));        // Below left knob
+		addChild(createColumnLabel(mm2px(Vec(20.32, 90)), "CHORD", 8.0f));   // Below right knob
 
-		// Output labels (above each jack)
-		addChild(createLabel(mm2px(Vec(10.0, 113)), "ROOT", 8.0f));
-		addChild(createLabel(mm2px(Vec(30.64, 113)), "CHORD", 8.0f));
+		// Input port labels (half-width columns)
+		addChild(createColumnLabel(mm2px(Vec(0, 101)), "CLOCK", 7.5f));
+		addChild(createColumnLabel(mm2px(Vec(20.32, 101)), "RESET", 7.5f));
+
+		// Output port labels (half-width columns)
+		addChild(createColumnLabel(mm2px(Vec(0, 113)), "ROOT", 7.5f));
+		addChild(createColumnLabel(mm2px(Vec(20.32, 113)), "CHORD", 7.5f));
 
 		// Parameters
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(20.32, 18)), module, LENGTH_PARAM));
@@ -280,7 +298,7 @@ struct BarChordSeqWidget : rack::app::ModuleWidget {
 
 		// Chord display (shows currently playing chord)
 		ChordDisplay* chordDisplay = new ChordDisplay();
-		chordDisplay->box.pos = mm2px(Vec(20.32 - 15, 73.5));  // Centered between LED and knobs
+		chordDisplay->box.pos = mm2px(Vec(0, 73.5));  // Full width, centered
 		chordDisplay->module = module;
 		addChild(chordDisplay);
 	}
