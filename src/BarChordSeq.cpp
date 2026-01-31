@@ -61,6 +61,7 @@ struct BarChordSeq : rack::engine::Module {
 	BarData bars[32];
 	int currentBar = 0;
 	int currentBeat = 0;
+	int lastSelectedBar = -1;
 
 	dsp::SchmittTrigger clockTrigger;
 	dsp::SchmittTrigger resetTrigger;
@@ -99,6 +100,7 @@ struct BarChordSeq : rack::engine::Module {
 		}
 		currentBar = 0;
 		currentBeat = 0;
+		lastSelectedBar = -1;
 	}
 
 	void process(const ProcessArgs& args) override {
@@ -115,6 +117,15 @@ struct BarChordSeq : rack::engine::Module {
 		selectedBar = clamp(selectedBar, 0, 31);
 		selectedRoot = clamp(selectedRoot, 0, 11);
 		selectedChord = clamp(selectedChord, 0, 16);
+
+		// When bar selection changes, load that bar's data into ROOT/CHORD knobs
+		if (selectedBar != lastSelectedBar) {
+			params[ROOT_PARAM].setValue((float)bars[selectedBar].root);
+			params[CHORD_PARAM].setValue((float)bars[selectedBar].chord);
+			selectedRoot = bars[selectedBar].root;
+			selectedChord = bars[selectedBar].chord;
+			lastSelectedBar = selectedBar;
+		}
 
 		// Write current selection to selected bar
 		bars[selectedBar].root = selectedRoot;
@@ -237,12 +248,12 @@ struct ChordDisplay : ui::Label {
 
 	void step() override {
 		if (module) {
-			// Show currently playing bar's chord
-			int root = module->bars[module->currentBar].root;
-			int chord = module->bars[module->currentBar].chord;
+			int root = (int)module->params[ROOT_PARAM].getValue();
+			int chord = (int)module->params[CHORD_PARAM].getValue();
+			root = clamp(root, 0, 11);
+			chord = clamp(chord, 0, 16);
 			text = std::string(noteNames[root]) + " " + scaleNames[chord];
 		} else {
-			// Browser preview mode
 			text = "C Maj";
 		}
 		ui::Label::step();
